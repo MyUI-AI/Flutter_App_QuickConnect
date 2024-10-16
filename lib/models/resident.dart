@@ -1,16 +1,16 @@
 class ResidentModel {
-  final String id;
+  final String? id;
   final String name;
   final String apartmentNumber;
   final String phoneNumber;
-  final String profilePic;
+  final String? profilePic;
 
   ResidentModel({
-    required this.id,
+    this.id,
     required this.name,
     required this.apartmentNumber,
     required this.phoneNumber,
-    required this.profilePic,
+    this.profilePic,
   });
 
   factory ResidentModel.fromFirestore(Map<String, dynamic> json, String id) {
@@ -28,7 +28,7 @@ class ResidentModel {
       'name': name,
       'apartmentNumber': apartmentNumber,
       'phoneNumber': phoneNumber,
-      'profilePic': profilePic,
+      if (profilePic != null) 'profilePic': profilePic,
     };
   }
 }

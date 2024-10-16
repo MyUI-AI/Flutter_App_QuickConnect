@@ -45,8 +45,17 @@ class NameSelectionPage extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.network(resident.profilePic,
-                            height: 80, width: 80),
+                        Image.network(
+                          resident.profilePic ?? '',
+                          height: 100,
+                          width: 100,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              Icons.account_circle,
+                              size: 100,
+                            );
+                          },
+                        ),
                         SizedBox(height: 10),
                         Text(resident.name, style: TextStyle(fontSize: 18)),
                       ],

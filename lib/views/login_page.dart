@@ -24,7 +24,9 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               Container(
                 margin: const EdgeInsets.only(bottom: 20),
-                child: Image.asset('assets/images/MyUI_logo.png', height: 100),
+                child: Image.asset(
+                    '/Users/shravanikonda/Flutter_App_QuickConnect/assets/images/MyUI_Logo.png',
+                    height: 100),
               ),
               Form(
                 key: _formKey,

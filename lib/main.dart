@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'models/resident.dart';
 import 'providers/resident_provider.dart';
 import 'repositories/resident_repository.dart';
 import 'services/firestore_service.dart';
+import 'views/dashboard_page.dart';
 import 'views/screen_saver.dart';
 
 void main() {
@@ -12,24 +14,24 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (_) => ResidentProvider(
-            ResidentRepository(FirestoreService()),
-          ),
+    return MaterialApp(
+      title: 'Retirement Home Kiosk',
+      theme: ThemeData(
+        primaryColor: Color(0xFFff6357),
+      ),
+      // Directly load the DashboardPage with a hardcoded resident
+      home: DashboardPage(
+        resident: ResidentModel(
+          name: 'Shravani Konda',
+          phoneNumber: '123-456-7890',
+          apartmentNumber: 'A123',
+          // Replace with a real image URL
         ),
-      ],
-      child: MaterialApp(
-        title: 'Retirement Home Kiosk',
-        theme: ThemeData(
-          primaryColor: Color(0xFFff6357), // Primary color for buttons, etc.
-        ),
-        home: ScreenSaver(), // Start with the ScreenSaver widget
       ),
     );
   }
 }
+
 
 // import 'package:flutter/material.dart';
 
