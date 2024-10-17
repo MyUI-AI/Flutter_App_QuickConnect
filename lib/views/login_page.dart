@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/resident_provider.dart'; // Import your UserProvider
-import 'name_selection_page.dart'; // Import the NameSelectionPage
+import 'name_selection_page.dart'; // Import the UserSelectionPage
 
 class LoginPage extends StatefulWidget {
   @override
@@ -25,8 +23,9 @@ class _LoginPageState extends State<LoginPage> {
               Container(
                 margin: const EdgeInsets.only(bottom: 20),
                 child: Image.asset(
-                    '/Users/shravanikonda/Flutter_App_QuickConnect/assets/images/MyUI_Logo.png',
-                    height: 100),
+                  'assets/images/MyUI_Logo.png',
+                  height: 100,
+                ),
               ),
               Form(
                 key: _formKey,
@@ -61,21 +60,17 @@ class _LoginPageState extends State<LoginPage> {
                     Container(
                       width: 300,
                       child: ElevatedButton(
-                        onPressed: () async {
+                        onPressed: () {
                           if (_formKey.currentState!.validate()) {
                             String aptNumber = _apartmentNumberController.text;
 
-                            // Use Provider to fetch residents based on apartment number
-                            await Provider.of<ResidentProvider>(context,
-                                    listen: false)
-                                .fetchResidentsByApartment(aptNumber);
-
-                            // Navigate to NameSelectionPage if residents are found
+                            // Navigate to UserSelectionPage with the apartment number
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => NameSelectionPage(
-                                    apartmentNumber: aptNumber),
+                                  apartmentNumber: aptNumber,
+                                ),
                               ),
                             );
                           }

@@ -48,7 +48,7 @@ class _ScreenSaverState extends State<ScreenSaver>
             child: Container(
               margin: const EdgeInsets.only(bottom: 180),
               child: Image.asset(
-                '/Users/shravanikonda/Flutter_App_QuickConnect/assets/images/MyUI_Logo.png', // Your logo path
+                'assets/images/MyUI_Logo.png', // Your logo path
                 height: 100,
               ),
             ),

@@ -1,5 +1,3 @@
-// ignore_for_file: unused_field
-
 import 'package:flutter/material.dart';
 import '../models/resident.dart';
 import '../repositories/resident_repository.dart';
@@ -13,20 +11,25 @@ class ResidentProvider extends ChangeNotifier {
   // Constructor
   ResidentProvider(this._residentRepository);
 
-  // Getter for users
+  // Getter for residents
   List<ResidentModel> get residents => _residents;
 
-  // Fetch users by apartment number
+  // Getter for loading state
+  bool get isLoading => _isLoading;
+
+  // Getter for error message
+  String? get errorMessage => _errorMessage;
+
+  // Fetch residents by apartment number
   Future<void> fetchResidentsByApartment(String apartmentNumber) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      _residents =
-          await _residentRepository.getResidentsByApartment(apartmentNumber);
-      _errorMessage = null;
+      _residents = await _residentRepository.getResidentsByApartment(apartmentNumber);
+      _errorMessage = null; // Reset error if successful
     } catch (e) {
-      _errorMessage = 'Failed to fetch users';
+      _errorMessage = 'Failed to fetch residents: $e';
     } finally {
       _isLoading = false;
       notifyListeners();

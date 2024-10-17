@@ -1,12 +1,20 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/resident.dart';
-import '../services/firestore_service.dart';
 
 class ResidentRepository {
-  final FirestoreService _firestoreService;
+  final FirebaseFirestore _firestore;
 
-  ResidentRepository(this._firestoreService);
+  ResidentRepository(this._firestore);
 
-  Future<List<ResidentModel>> getResidentsByApartment(String apartmentNumber) {
-    return _firestoreService.getResidentsByApartment(apartmentNumber);
+  // Fetch residents by apartment number from Firestore
+  Future<List<ResidentModel>> getResidentsByApartment(String apartmentNumber) async {
+    final snapshot = await _firestore
+        .collection('residents')
+        .where('apartmentNumber', isEqualTo: apartmentNumber)
+        .get();
+
+    return snapshot.docs
+        .map((doc) => ResidentModel.fromFirestore(doc.data(), doc.id))
+        .toList();
   }
 }

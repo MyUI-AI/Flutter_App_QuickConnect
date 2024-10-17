@@ -1,56 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'models/resident.dart';
-import 'providers/resident_provider.dart';
+import 'views/login_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'views/screen_saver.dart'; // Importing screen_saver.dart
 import 'repositories/resident_repository.dart';
-import 'services/firestore_service.dart';
-import 'views/dashboard_page.dart';
-import 'views/screen_saver.dart';
+import 'providers/resident_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 void main() {
-  runApp(MyApp());
-}
+runApp(MyApp());
+ }
 
 class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Retirement Home Kiosk',
-      theme: ThemeData(
-        primaryColor: Color(0xFFff6357),
-      ),
-      // Directly load the DashboardPage with a hardcoded resident
-      home: DashboardPage(
-        resident: ResidentModel(
-          name: 'Shravani Konda',
-          phoneNumber: '123-456-7890',
-          apartmentNumber: 'A123',
-          // Replace with a real image URL
-        ),
-      ),
-    );
-  }
+@override
+   Widget build(BuildContext context) {
+     return MaterialApp(
+       title: 'Retirement Home Kiosk',
+       theme: ThemeData(
+         primaryColor: Color(0xFFff6357), // Primary color for the button
+       ),
+       home: ScreenSaver(), // Start with the ScreenSaver
+     );
 }
+}
+//class MyApp extends StatelessWidget {
+//  @override
+//  Widget build(BuildContext context) {
+//    return MaterialApp(
+//      title: 'Retirement Home Kiosk',
+//      theme: ThemeData(
+//        primaryColor: Color(0xFFff6357),
+//      ),
+      // Directly load the DashboardPage with a hardcoded resident
+//      home: DashboardPage(
+//        resident: ResidentModel(
+//          name: 'Shravani Konda',
+//          phoneNumber: '123-456-7890',
+//          apartmentNumber: 'A123',
+          // Replace with a real image URL
+//        ),
+//      ),
+//    );
+//  }
+//}
 
-
-// import 'package:flutter/material.dart';
-
-// void main() {
-//   runApp(MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Retirement Home Kiosk',
-//       theme: ThemeData(
-//         primaryColor: Color(0xFFff6357), // Primary color for the button
-//       ),
-//       home: ScreenSaver(), // Start with the ScreenSaver
-//     );
-//   }
-// }
 
 // class ScreenSaver extends StatefulWidget {
 //   @override
