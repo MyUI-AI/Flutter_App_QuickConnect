@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.quick_connect_application"
-        minSdk = 21  // You can adjust this to suit your app requirements
+        minSdk = 23  // You can adjust this to suit your app requirements
         targetSdk = 34  // Updated to SDK version 34
         versionCode = 1  // Update as necessary for your versioning
         versionName = "1.0.0"

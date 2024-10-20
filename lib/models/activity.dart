@@ -3,12 +3,13 @@ class Activity {
   final String description;
   final String date;
   final String time;
-  final String? activityImage;
+  final String activityImage;
 
-  Activity(
-      {required this.name,
-      required this.description,
-      required this.date,
-      required this.time,
-      this.activityImage});
+  Activity({
+    required this.name,
+    required this.description,
+    required this.date,
+    required this.time,
+    required this.activityImage,
+  });
 }
