@@ -11,5 +11,6 @@ class Activity {
     required this.date,
     required this.time,
     required this.activityImage,
+
   });
 }

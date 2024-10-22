@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "167096627109",
+    "project_id": "quickconnect-3e930",
+    "storage_bucket": "quickconnect-3e930.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:167096627109:android:d345fce84307adb95d024c",
+        "android_client_info": {
+          "package_name": "com.example.quick_connect_application"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBntpszA9oURJVaiVgeNuGHYbpLkOUvTaw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:167096627109:android:93e0b2f74a1993b15d024c",
+        "android_client_info": {
+          "package_name": "com.myui.quickconnect"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBntpszA9oURJVaiVgeNuGHYbpLkOUvTaw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

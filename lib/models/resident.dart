@@ -1,11 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class ResidentModel {
   final String? id;
   final String name;
   final String apartmentNumber;
   final String phoneNumber;
   final String? profilePic;
+  final double textSize; // Add textSize field
 
   ResidentModel({
     this.id,
@@ -13,9 +12,9 @@ class ResidentModel {
     required this.apartmentNumber,
     required this.phoneNumber,
     this.profilePic,
+    this.textSize = 14.0, // Default text size
   });
 
-  // Factory constructor to create a ResidentModel from Firestore document
   factory ResidentModel.fromFirestore(Map<String, dynamic> json, String id) {
     return ResidentModel(
       id: id,
@@ -23,16 +22,17 @@ class ResidentModel {
       apartmentNumber: json['apartmentNumber'] ?? '',
       phoneNumber: json['phoneNumber'] ?? '',
       profilePic: json['profilePic'],
+      textSize: json['textSize']?.toDouble() ?? 14.0, // Default if null
     );
   }
 
-  // Method to convert ResidentModel to Firestore data format
   Map<String, dynamic> toFirestore() {
     return {
       'name': name,
       'apartmentNumber': apartmentNumber,
       'phoneNumber': phoneNumber,
       if (profilePic != null) 'profilePic': profilePic,
+      'textSize': textSize,
     };
   }
 }

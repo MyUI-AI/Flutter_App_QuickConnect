@@ -1,29 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'views/login_page.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'views/screen_saver.dart'; // Importing screen_saver.dart
-import 'repositories/resident_repository.dart';
-import 'providers/resident_provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firebase Firestore
 
+import 'firebase_options.dart'; // Import the generated firebase_options.dart file
+import 'repositories/resident_repository.dart'; // Import the ResidentRepository
+import 'providers/resident_provider.dart'; // Import the ResidentProvider
+import 'providers/text_size_provider.dart'; // Import the TextSizeProvider
+import 'views/login_page.dart';
+import 'views/screen_saver.dart';
 
-void main() {
-runApp(MyApp());
- }
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase with options
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    // Handle initialization error
+    print("Firebase initialization error: $e");
+    return;
+  }
+
+  final firestore = FirebaseFirestore.instance;
+  final residentRepository = ResidentRepository(firestore: firestore); // Create the repository
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => ResidentProvider(residentRepository: residentRepository), // Pass the repository
+        ),
+        ChangeNotifierProvider(
+          create: (context) => TextSizeProvider(16.0), // Initialize TextSizeProvider with a default size
+        ),
+        // Add any other providers here
+      ],
+      child: MyApp(),
+    ),
+  );
+}
 
 class MyApp extends StatelessWidget {
-@override
-   Widget build(BuildContext context) {
-     return MaterialApp(
-       title: 'Retirement Home Kiosk',
-       theme: ThemeData(
-         primaryColor: Color(0xFFff6357), // Primary color for the button
-       ),
-       home: ScreenSaver(), // Start with the ScreenSaver
-     );
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Retirement Home Kiosk',
+      theme: ThemeData(
+        primaryColor: Color(0xFFff6357), // Primary color for the button
+      ),
+      home: ScreenSaver(), // Start with the ScreenSaver
+    );
+  }
 }
-}
+
+
+
 //class MyApp extends StatelessWidget {
 //  @override
 //  Widget build(BuildContext context) {

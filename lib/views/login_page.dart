@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import 'name_selection_page.dart'; // Import the UserSelectionPage
+import 'package:provider/provider.dart';
+import '../providers/resident_provider.dart';
+import '../providers/text_size_provider.dart'; // Import your TextSizeProvider
+import 'name_selection_page.dart'; // Import the NameSelectionPage
+import 'dashboard_page.dart'; // Import the DashboardPage
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 
 class LoginPage extends StatefulWidget {
   @override
@@ -9,6 +14,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _apartmentNumberController = TextEditingController();
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -27,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView( // Allow scrolling for smaller screens
+          child: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -43,21 +49,17 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     children: [
                       Container(
-                        width: double.infinity, // Use full width
+                        constraints: BoxConstraints(maxWidth: 300), // Limit the width of the text field
                         child: TextFormField(
                           controller: _apartmentNumberController,
                           decoration: InputDecoration(
                             labelText: 'Enter Apartment Number',
                             hintText: 'A123',
                             border: OutlineInputBorder(),
-                            labelStyle: TextStyle(color: Colors.black),
-                            hintStyle: TextStyle(color: Colors.grey),
                             filled: true,
                             fillColor: Colors.white,
                           ),
-                          style: TextStyle(color: Colors.black),
-                          keyboardType: TextInputType.text, // Show keyboard suitable for text input
-                          textInputAction: TextInputAction.done, // Change keyboard action to "Done"
+                          keyboardType: TextInputType.text,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your apartment number';
@@ -71,25 +73,11 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       SizedBox(height: 20),
                       Container(
-                        width: double.infinity, // Use full width
+                        constraints: BoxConstraints(maxWidth: 300), // Limit the width of the button
                         child: ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              String aptNumber = _apartmentNumberController.text;
-
-                              // Navigate to UserSelectionPage with the apartment number
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => NameSelectionPage(
-                                    apartmentNumber: aptNumber,
-                                  ),
-                                ),
-                              );
-                            }
-                          },
+                          onPressed: _login, // Call the _login method
                           style: ElevatedButton.styleFrom(
-                            minimumSize: Size(0, 50),
+                            minimumSize: Size(0, 50), // Set a minimum size for the button
                             backgroundColor: Color(0xFFff6357),
                             textStyle: TextStyle(fontSize: 18),
                           ),
@@ -99,33 +87,14 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 20),
-                      TextButton(
-                        onPressed: () {
-                          // Implement "Forgot Password" functionality if needed
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                title: Text('Forgot Password?'),
-                                content: Text('Please contact support.'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text('OK'),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                        child: Text(
-                          'Forgot Password?',
-                          style: TextStyle(color: Colors.blue),
+                      if (_errorMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            _errorMessage!,
+                            style: TextStyle(color: Colors.red),
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -135,6 +104,61 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  void _login() async {
+    if (_formKey.currentState!.validate()) {
+      String aptNumber = _apartmentNumberController.text;
+
+      // Fetch the resident based on apartment number
+      await Provider.of<ResidentProvider>(context, listen: false)
+          .fetchResidentsByApartment(aptNumber);
+
+      // Access the resident provider state
+      ResidentProvider residentProvider = Provider.of<ResidentProvider>(context, listen: false);
+
+      if (residentProvider.errorMessage != null) {
+        setState(() {
+          _errorMessage = residentProvider.errorMessage;
+        });
+      } else {
+        // Fetch textSize from Firebase
+        double fetchedTextSize = await fetchTextSizeFromFirebase();
+
+        // Update provider with the fetched text size
+        Provider.of<TextSizeProvider>(context, listen: false).updateTextSize(fetchedTextSize);
+
+        // Handle different cases
+        if (residentProvider.resident != null) {
+          // Only one resident, navigate directly to DashboardPage with the resident data
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DashboardPage(resident: residentProvider.resident!), // Pass the resident
+            ),
+          );
+        } else {
+          // Multiple residents, navigate to NameSelectionPage
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => NameSelectionPage(apartmentNumber: aptNumber),
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<double> fetchTextSizeFromFirebase() async {
+    // Implement your logic to fetch text size from Firebase
+    try {
+      final document = await FirebaseFirestore.instance.collection('settings').doc('textSize').get();
+      return document.data()?['size'] ?? 16.0; // Default size if not found
+    } catch (e) {
+      print("Error fetching text size: $e");
+      return 16.0; // Return a default value in case of error
+    }
   }
 
   @override

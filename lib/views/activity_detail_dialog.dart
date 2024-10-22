@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // Import the provider package
 import '../models/activity.dart';
+import '../providers/text_size_provider.dart'; // Import your TextSizeProvider
 
 class ActivityDetailDialog extends StatelessWidget {
   final Activity activity;
@@ -8,11 +10,16 @@ class ActivityDetailDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double textSize = Provider.of<TextSizeProvider>(context).minTextSize; // Get minTextSize from the provider
+
     return AlertDialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      title: Text(activity.name, style: const TextStyle(fontSize: 24)),
+      title: Text(
+        activity.name,
+        style: TextStyle(fontSize: textSize * 1.5), // Use dynamic text size for title
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -35,12 +42,20 @@ class ActivityDetailDialog extends StatelessWidget {
               child: const Icon(Icons.image, color: Colors.black), // Placeholder icon
             ),
           const SizedBox(height: 10),
-          Text('Description: ${activity.description}',
-              style: const TextStyle(fontSize: 18)),
+          Text(
+            'Description: ${activity.description}',
+            style: TextStyle(fontSize: textSize), // Use dynamic text size for description
+          ),
           const SizedBox(height: 8),
-          Text('Date: ${activity.date}', style: const TextStyle(fontSize: 18)),
+          Text(
+            'Date: ${activity.date}',
+            style: TextStyle(fontSize: textSize), // Use dynamic text size for date
+          ),
           const SizedBox(height: 8),
-          Text('Time: ${activity.time}', style: const TextStyle(fontSize: 18)),
+          Text(
+            'Time: ${activity.time}',
+            style: TextStyle(fontSize: textSize), // Use dynamic text size for time
+          ),
         ],
       ),
       actions: [
@@ -54,7 +69,10 @@ class ActivityDetailDialog extends StatelessWidget {
                   // Notify the user of the sign-up
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Signed up for ${activity.name} at ${activity.time}!'),
+                      content: Text(
+                        'Signed up for ${activity.name} at ${activity.time}!',
+                        style: TextStyle(fontSize: textSize), // Use dynamic text size for Snackbar
+                      ),
                       duration: const Duration(seconds: 2), // Duration of the Snackbar
                     ),
                   );
@@ -62,17 +80,17 @@ class ActivityDetailDialog extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFfe6357), // Sign up button color
                 ),
-                child: const Text(
+                child: Text(
                   'Sign Up',
-                  style: TextStyle(color: Colors.white), // White text for contrast
+                  style: TextStyle(color: Colors.white, fontSize: textSize), // Use dynamic text size for button
                 ),
               ),
               const SizedBox(width: 10), // Add spacing between buttons
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text(
+                child: Text(
                   'Cancel',
-                  style: TextStyle(color: Color(0xFFfe6357)), // Optional: matching color for cancel text
+                  style: TextStyle(color: const Color(0xFFfe6357), fontSize: textSize), // Use dynamic text size for cancel text
                 ),
               ),
             ],
