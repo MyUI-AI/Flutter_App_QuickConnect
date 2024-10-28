@@ -11,32 +11,27 @@ class DashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Use the resident's text size for the TextSizeProvider
-    Provider.of<TextSizeProvider>(context, listen: false).updateTextSize(resident.textSize);
-
     // Access the TextSizeProvider to get the minimum text size
-    double minTextSize = Provider.of<TextSizeProvider>(context).minTextSize;
+    final textSizeProvider = Provider.of<TextSizeProvider>(context);
+    double minTextSize = textSizeProvider.minTextSize;
 
-    // Show SnackBar with minimum text size
+    // Using post-frame callback to ensure setState() is not called during build phase
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Minimum Text Size: ${minTextSize.toString()}"),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      if (minTextSize != resident.textSize) {
+        textSizeProvider.updateTextSize(resident.textSize);
+      }
     });
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
           "Welcome, ${resident.name}",
-          style: TextStyle(fontSize: Provider.of<TextSizeProvider>(context).getRelativeTextSize(1.75)),
+          style: TextStyle(fontSize: textSizeProvider.getRelativeTextSize(1.75)),
           textAlign: TextAlign.center,
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.logout, size: Provider.of<TextSizeProvider>(context).getRelativeTextSize(2)),
+            icon: Icon(Icons.logout, size: textSizeProvider.getRelativeTextSize(2)),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Logging out...')),
@@ -52,11 +47,11 @@ class DashboardPage extends StatelessWidget {
 
           // Dynamically calculate tile size based on screen width
           double tileSize = screenWidth * 0.35;  // Adjust this ratio as needed
-          double textSize = Provider.of<TextSizeProvider>(context).minTextSize;
+          double textSize = textSizeProvider.minTextSize;
           double iconSize = textSize * 1.5;
 
           return Padding(
-            padding: EdgeInsets.all(Provider.of<TextSizeProvider>(context).getRelativeTextSize(0.875)),
+            padding: EdgeInsets.all(textSizeProvider.getRelativeTextSize(0.875)),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

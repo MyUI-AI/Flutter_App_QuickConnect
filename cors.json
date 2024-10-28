@@ -1,0 +1,18 @@
+[
+  {
+    "origin": [
+      "http://localhost:*",
+      "https://com.myui.quickconnect",
+      "https://quick_connect_application",
+      "https://com.myui.quick",
+      "https://com.example.quick_connect_application",
+      "https://quick_connect_application",
+      "https://com.example.quickConnectApplication",
+      "https://quick_connect_application",
+      "https://quick_connect_application.windows"       
+    ],
+    "method": ["GET", "POST", "PUT", "DELETE"],
+    "maxAgeSeconds": 3600
+  }
+]
+

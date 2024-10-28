@@ -9,8 +9,10 @@ class TextSizeProvider with ChangeNotifier {
 
   // Method to update the minimum text size
   void updateTextSize(double newSize) {
-    _minTextSize = newSize;
-    notifyListeners(); // Notify listeners about the change
+    if (newSize != _minTextSize) { // Ensure size is different before updating
+      _minTextSize = newSize;
+      notifyListeners(); // Notify listeners about the change
+    }
   }
 
   // Method to get a relative size based on the minimum text size

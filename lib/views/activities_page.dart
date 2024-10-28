@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/activity.dart';
 import 'activity_detail_dialog.dart';
 import 'login_page.dart';
 import 'package:provider/provider.dart';
-import '../providers/text_size_provider.dart'; // Import your provider
+import '../providers/text_size_provider.dart';
+import 'package:intl/intl.dart';
 
 class ActivitiesPage extends StatefulWidget {
   @override
@@ -11,167 +13,53 @@ class ActivitiesPage extends StatefulWidget {
 }
 
 class _ActivitiesPageState extends State<ActivitiesPage> {
-  int currentDayIndex = DateTime.now().weekday - 1;
+  DateTime currentDate = DateTime.now(); // Track current date
+  bool _isDialogOpen = false; // Flag to manage dialog state
 
-  // Sample days of the week
   final List<String> daysOfWeek = [
     'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
   ];
 
-  // Sample activities per day
-  final Map<String, List<Activity>> activitiesByDay = {
-    'Monday': [
-      Activity(
-        name: 'Morning Yoga',
-        description: 'Start your week with yoga.',
-        date: 'Monday',
-        time: '8:00 AM',
-        activityImage: 'https://www.example.com/yoga.jpg',
-      ),
-      Activity(
-        name: 'Team Meeting',
-        description: 'Weekly sync-up with the team.',
-        date: 'Monday',
-        time: '10:00 AM',
-        activityImage: 'https://www.example.com/team-meeting.jpg',
-      ),
-      Activity(
-        name: 'Lunch Break',
-        description: 'Take a break and relax.',
-        date: 'Monday',
-        time: '12:00 PM',
-        activityImage: 'https://www.example.com/lunch.jpg',
-      ),
-      Activity(
-        name: 'Grocery Shopping',
-        description: 'Get fresh groceries for the week.',
-        date: 'Monday',
-        time: '3:00 PM',
-        activityImage: 'https://www.example.com/grocery.jpg',
-      ),
-      Activity(
-        name: 'Evening Walk',
-        description: 'Enjoy a refreshing walk in the park.',
-        date: 'Monday',
-        time: '6:00 PM',
-        activityImage: 'https://www.example.com/walk.jpg',
-      ),
-      Activity(
-        name: 'Dinner Preparation',
-        description: 'Prepare a healthy dinner.',
-        date: 'Monday',
-        time: '7:30 PM',
-        activityImage: 'https://www.example.com/dinner.jpg',
-      ),
-    ],
-    'Tuesday': [
-      Activity(
-        name: 'Cooking Workshop',
-        description: 'Learn to cook healthy meals.',
-        date: 'Tuesday',
-        time: '10:00 AM',
-        activityImage: 'https://www.example.com/cooking-workshop.jpg',
-      ),
-      Activity(
-        name: 'Project Planning',
-        description: 'Plan out your projects for the week.',
-        date: 'Tuesday',
-        time: '1:00 PM',
-        activityImage: 'https://www.example.com/planning.jpg',
-      ),
-      Activity(
-        name: 'Gym Session',
-        description: 'Hit the gym for a workout.',
-        date: 'Tuesday',
-        time: '5:00 PM',
-        activityImage: 'https://www.example.com/gym.jpg',
-      ),
-      Activity(
-        name: 'Book Club',
-        description: 'Discuss this month\'s book.',
-        date: 'Tuesday',
-        time: '8:00 PM',
-        activityImage: 'https://www.example.com/book-club.jpg',
-      ),
-    ],
-    'Wednesday': [
-      Activity(
-        name: 'Morning Run',
-        description: 'Start your day with a run.',
-        date: 'Wednesday',
-        time: '7:00 AM',
-        activityImage: 'https://www.example.com/run.jpg',
-      ),
-      Activity(
-        name: 'Work on Projects',
-        description: 'Focus on ongoing projects.',
-        date: 'Wednesday',
-        time: '10:00 AM',
-        activityImage: 'https://www.example.com/projects.jpg',
-      ),
-      Activity(
-        name: 'Lunch with Friends',
-        description: 'Catch up with friends over lunch.',
-        date: 'Wednesday',
-        time: '1:00 PM',
-        activityImage: 'https://www.example.com/lunch-friends.jpg',
-      ),
-      Activity(
-        name: 'Visit to Art Gallery',
-        description: 'Explore new art exhibitions.',
-        date: 'Wednesday',
-        time: '4:00 PM',
-        activityImage: 'https://www.example.com/art-gallery.jpg',
-      ),
-      Activity(
-        name: 'Movie Night',
-        description: 'Watch a movie with family or friends.',
-        date: 'Wednesday',
-        time: '7:00 PM',
-        activityImage: 'https://www.example.com/movie-night.jpg',
-      ),
-    ],
-    // Define other days if needed
-  };
+  int currentDayIndex = DateTime.now().weekday - 1; // Index of the current day
 
-  // Navigate to the next day
-  void _nextDay() {
-    setState(() {
-      currentDayIndex = (currentDayIndex + 1) % daysOfWeek.length;
-    });
-  }
-
-  // Navigate to the previous day
-  void _previousDay() {
-    setState(() {
-      currentDayIndex = (currentDayIndex - 1 + daysOfWeek.length) % daysOfWeek.length;
-    });
-  }
-
-  // Logout function
   void _logout() {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (context) => LoginPage()),
     );
   }
 
+  void _nextDay() {
+    setState(() {
+      currentDate = currentDate.add(Duration(days: 1)); // Move to next day
+      currentDayIndex = (currentDayIndex + 1) % daysOfWeek.length; // Update current day index
+    });
+  }
+
+  void _previousDay() {
+    setState(() {
+      currentDate = currentDate.subtract(Duration(days: 1)); // Move to previous day
+      currentDayIndex = (currentDayIndex - 1 + daysOfWeek.length) % daysOfWeek.length; // Update current day index
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    double minTextSize = Provider.of<TextSizeProvider>(context).minTextSize; // Access min text size
+    double minTextSize = Provider.of<TextSizeProvider>(context).minTextSize;
 
-    // Determine number of days to show based on text size
-    int visibleDaysCount = minTextSize > 16 ? 2 : 3; // Adjust based on text size
+    int visibleDaysCount = minTextSize > 16 ? 2 : 3;
     List<String> visibleDays = List.generate(visibleDaysCount, (index) {
-      return daysOfWeek[(currentDayIndex + index) % daysOfWeek.length];
+      DateTime dayDate = currentDate.add(Duration(days: index));
+      return '${daysOfWeek[(currentDate.weekday - 1 + index) % daysOfWeek.length]} ${DateFormat('dd/MM').format(dayDate)}'; // Correctly format the date
     });
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
           'Activities',
-          style: TextStyle(fontSize: minTextSize * 1.75), // Dynamic title size
+          style: TextStyle(fontSize: minTextSize * 1.75),
         ),
-        backgroundColor: const Color(0xFFfe6357), // Primary color
+        backgroundColor: const Color(0xFFfe6357),
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -180,10 +68,9 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
         ],
       ),
       body: Padding(
-        padding: EdgeInsets.all(minTextSize), // General padding for the body
+        padding: EdgeInsets.all(minTextSize),
         child: Column(
           children: [
-            // Navigation arrows
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -197,15 +84,14 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                 ),
               ],
             ),
-            // Display days and activities
             Expanded(
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: visibleDays.map((day) {
                     return SizedBox(
-                      width: MediaQuery.of(context).size.width * (1 / visibleDaysCount),
-                      child: _buildDayColumn(day, activitiesByDay[day] ?? [], minTextSize),
+                        width: MediaQuery.of(context).size.width * (1 / visibleDaysCount),
+                        child: _buildDayColumn(day.split(' ')[0], minTextSize, day.split(' ')[1])
                     );
                   }).toList(),
                 ),
@@ -217,35 +103,90 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     );
   }
 
-  // Build each day's column of activities
-  Widget _buildDayColumn(String day, List<Activity> activities, double minTextSize) {
+  Widget _buildDayColumn(String day, double minTextSize, String formattedDate) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          padding: EdgeInsets.all(minTextSize * 0.75),
+          padding: EdgeInsets.all(minTextSize * 1.5), // Increased padding for day container
+          margin: EdgeInsets.symmetric(vertical: minTextSize * 2, horizontal: minTextSize), // Uniform vertical and horizontal margin
           decoration: BoxDecoration(
             color: const Color(0xFFfe6357),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Center(
-            child: Text(
-              day,
-              style: TextStyle(
-                fontSize: minTextSize * 1.5, // Dynamic text size
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Text(
+                  day,
+                  style: TextStyle(
+                    fontSize: minTextSize * 1.5,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
+              SizedBox(height: minTextSize * 1.0), // Spacing below day name
+              Center(
+                child: Text(
+                  formattedDate,
+                  style: TextStyle(
+                    fontSize: minTextSize,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-        SizedBox(height: minTextSize * 1.5), // Increased spacing between day header and activities
         Expanded(
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: activities.length,
-            itemBuilder: (context, index) {
-              return _buildActivityTile(activities[index], minTextSize);
+          child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('activities').snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return Center(child: Text('No activities found.'));
+              }
+
+              List<Activity> activities = [];
+              DateTime startDate = DateTime.now();
+              for (var doc in snapshot.data!.docs) {
+                var data = doc.data() as Map<String, dynamic>;
+                DateTime startTime = (data['startTime'] as Timestamp).toDate();
+                String dayFromStartTime = DateFormat('EEEE').format(startTime);
+
+                // Check if the day matches the startTime
+                if (dayFromStartTime == day) {
+                  activities.add(Activity(
+                    name: data['name'],
+                    description: data['description'],
+                    activityImage: data['activityImage'],
+                    startTime: startTime,
+                    endTime: (data['endTime'] as Timestamp).toDate(),
+                    location: data['location'],
+                    capacity: data['capacity'],
+                    count: data['count'] ?? 0,
+                  ));
+                  // Store the start date to display below the day name
+                  startDate = startTime;
+                }
+              }
+
+              // Sort activities by start time
+              activities.sort((a, b) => a.startTime.compareTo(b.startTime));
+
+              // Format the date to display
+              String formattedDate = DateFormat('dd/MM').format(startDate);
+
+              return ListView.builder(
+                itemCount: activities.length,
+                itemBuilder: (context, index) {
+                  return _buildActivityTile(activities[index], minTextSize);
+                },
+              );
             },
           ),
         ),
@@ -253,53 +194,74 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     );
   }
 
-  // Build each activity tile
   Widget _buildActivityTile(Activity activity, double minTextSize) {
     return GestureDetector(
-      onTap: () => _showActivityDetail(context, activity),
+      onTap: () => _showActivityDetail(activity, minTextSize),
       child: Container(
-        margin: EdgeInsets.only(bottom: minTextSize * 1.5), // Increased margin between activities
-        padding: EdgeInsets.all(minTextSize * 1.25), // Increased padding inside activity tiles
+        margin: EdgeInsets.symmetric(vertical: minTextSize, horizontal: minTextSize * 1.5), // Uniform vertical and horizontal margin
+        padding: EdgeInsets.all(minTextSize), // Padding within activity tiles
         decoration: BoxDecoration(
           color: const Color(0xFFF8D7DA),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Activity image or placeholder
             Container(
-              width: minTextSize * 5,
-              height: minTextSize * 5,
+              width: minTextSize * 6,
+              height: minTextSize * 6,
               decoration: BoxDecoration(
                 color: const Color(0xFFEDEDED),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: activity.activityImage != null
-                    ? Image.network(activity.activityImage!, fit: BoxFit.cover)
+                child: activity.activityImage != null && activity.activityImage!.isNotEmpty
+                    ? Image.network(
+                  activity.activityImage!,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
+                            : null,
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(Icons.error, color: Colors.grey);
+                  },
+                )
                     : Icon(Icons.image, color: Colors.grey),
               ),
             ),
-            SizedBox(width: minTextSize * 0.75), // Space between image and text
+            SizedBox(width: minTextSize), // Spacing between image and text
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     activity.name,
-                    style: TextStyle(fontSize: minTextSize * 1.25, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: minTextSize * 1.1, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: minTextSize * 0.25), // Space between title and description
+                  SizedBox(height: minTextSize * 0.5), // Spacing between name and time
                   Text(
-                    activity.description,
-                    style: TextStyle(fontSize: minTextSize, color: Colors.grey[700]),
-                  ),
-                  SizedBox(height: minTextSize * 0.25), // Space between description and time
-                  Text(
-                    activity.time,
+                    '${activity.startTime.hour}:${activity.startTime.minute.toString().padLeft(2, '0')} - ${activity.endTime.hour}:${activity.endTime.minute.toString().padLeft(2, '0')}',
                     style: TextStyle(fontSize: minTextSize, fontWeight: FontWeight.bold),
                   ),
+                  //SizedBox(height: minTextSize * 0.5), // Spacing between time and registration info
+                  //if (activity.count < activity.capacity) // Check if count is less than capacity
+                    //Text(
+                      //'Registrations: ${activity.count} / ${activity.capacity}',
+                      //style: TextStyle(fontSize: minTextSize * 0.9, color: Colors.grey[700]),
+                    //)
+                  //else
+                    //Text(
+                      //'No seats left', // Display when count exceeds capacity
+                      //style: TextStyle(fontSize: minTextSize * 0.9, color: Colors.red), // Optional styling for "No seats left"
+                    //),
                 ],
               ),
             ),
@@ -309,13 +271,18 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     );
   }
 
-  // Show activity detail dialog
-  void _showActivityDetail(BuildContext context, Activity activity) {
+
+  void _showActivityDetail(Activity activity, double minTextSize) {
+    if (_isDialogOpen) return; // Prevent multiple dialogs from opening
+
+    _isDialogOpen = true; // Set the flag to true
     showDialog(
       context: context,
       builder: (context) {
-        return ActivityDetailDialog(activity: activity);
+        return ActivityDetailDialog(activity: activity, minTextSize: minTextSize);
       },
-    );
+    ).then((_) {
+      _isDialogOpen = false; // Reset the flag when the dialog is closed
+    });
   }
 }

@@ -7,7 +7,6 @@ import 'firebase_options.dart'; // Import the generated firebase_options.dart fi
 import 'repositories/resident_repository.dart'; // Import the ResidentRepository
 import 'providers/resident_provider.dart'; // Import the ResidentProvider
 import 'providers/text_size_provider.dart'; // Import the TextSizeProvider
-import 'views/login_page.dart';
 import 'views/screen_saver.dart';
 
 void main() async {
