@@ -24,10 +24,9 @@ class ActivityDetailDialog extends StatelessWidget {
       return; // Exit the function if no capacity
     }
 
-    // Increment count and close the dialog
-    activity.incrementCount();
-    print('Signed up for ${activity.name}. New count: ${activity.count}');
-    Navigator.of(context).pop(); // Close dialog after signing up
+    // Print confirmation without incrementing count
+    print('Attempted to sign up for ${activity.name}. Current count: ${activity.count}');
+    Navigator.of(context).pop(); // Close dialog after attempting to sign up
   }
 
   @override
