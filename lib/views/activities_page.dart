@@ -5,6 +5,7 @@ import 'activity_detail_dialog.dart';
 import 'login_page.dart';
 import 'package:provider/provider.dart';
 import '../providers/text_size_provider.dart';
+import '../providers/resident_provider.dart'; // Import ResidentProvider
 import 'package:intl/intl.dart';
 
 class ActivitiesPage extends StatefulWidget {
@@ -23,10 +24,37 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
   int currentDayIndex = DateTime.now().weekday - 1; // Index of the current day
 
   void _logout() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => LoginPage()),
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Confirm Logout'),
+          content: Text('Are you sure you want to log out?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                final residentProvider = Provider.of<ResidentProvider>(context, listen: false);
+                residentProvider.clearResident(); // Clear resident data on logout
+
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                      (Route<dynamic> route) => false, // Remove all previous routes
+                );
+              },
+              child: Text('Logout'),
+            ),
+          ],
+        );
+      },
     );
   }
+
 
   void _nextDay() {
     setState(() {
@@ -56,13 +84,16 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
       appBar: AppBar(
         title: Text(
           'Activities',
-          style: TextStyle(fontSize: minTextSize * 1.75),
+          style: TextStyle(fontSize: minTextSize * 1.2),
         ),
         backgroundColor: const Color(0xFFfe6357),
         foregroundColor: Colors.white,
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: Icon(
+              Icons.logout,
+              size: minTextSize, // Dynamically set icon size
+            ),
             onPressed: _logout,
           ),
         ],
@@ -71,30 +102,13 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
         padding: EdgeInsets.all(minTextSize),
         child: Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: _previousDay,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.arrow_forward),
-                  onPressed: _nextDay,
-                ),
-              ],
-            ),
             Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: visibleDays.map((day) {
-                    return SizedBox(
-                        width: MediaQuery.of(context).size.width * (1 / visibleDaysCount),
-                        child: _buildDayColumn(day.split(' ')[0], minTextSize, day.split(' ')[1])
-                    );
-                  }).toList(),
-                ),
+              child: Row(
+                children: visibleDays.map((day) {
+                  return Expanded(
+                      child: _buildDayColumn(day.split(' ')[0], minTextSize, day.split(' ')[1])
+                  );
+                }).toList(),
               ),
             ),
           ],
@@ -105,40 +119,28 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
 
   Widget _buildDayColumn(String day, double minTextSize, String formattedDate) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Container(
-          padding: EdgeInsets.all(minTextSize * 1.5), // Increased padding for day container
-          margin: EdgeInsets.symmetric(vertical: minTextSize * 2, horizontal: minTextSize), // Uniform vertical and horizontal margin
-          decoration: BoxDecoration(
-            color: const Color(0xFFfe6357),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Center(
-                child: Text(
-                  day,
-                  style: TextStyle(
-                    fontSize: minTextSize * 1.5,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: _previousDay,
+            ),
+            Text(
+              '$day $formattedDate',
+              style: TextStyle(
+                  fontSize: minTextSize * 1.5,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black
               ),
-              SizedBox(height: minTextSize * 1.0), // Spacing below day name
-              Center(
-                child: Text(
-                  formattedDate,
-                  style: TextStyle(
-                    fontSize: minTextSize,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.arrow_forward),
+              onPressed: _nextDay,
+            ),
+          ],
         ),
         Expanded(
           child: StreamBuilder<QuerySnapshot>(
@@ -152,13 +154,11 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
               }
 
               List<Activity> activities = [];
-              DateTime startDate = DateTime.now();
               for (var doc in snapshot.data!.docs) {
                 var data = doc.data() as Map<String, dynamic>;
                 DateTime startTime = (data['startTime'] as Timestamp).toDate();
                 String dayFromStartTime = DateFormat('EEEE').format(startTime);
 
-                // Check if the day matches the startTime
                 if (dayFromStartTime == day) {
                   activities.add(Activity(
                     name: data['name'],
@@ -170,16 +170,10 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                     capacity: data['capacity'],
                     count: data['count'] ?? 0,
                   ));
-                  // Store the start date to display below the day name
-                  startDate = startTime;
                 }
               }
 
-              // Sort activities by start time
               activities.sort((a, b) => a.startTime.compareTo(b.startTime));
-
-              // Format the date to display
-              String formattedDate = DateFormat('dd/MM').format(startDate);
 
               return ListView.builder(
                 itemCount: activities.length,
@@ -251,17 +245,6 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                     '${activity.startTime.hour}:${activity.startTime.minute.toString().padLeft(2, '0')} - ${activity.endTime.hour}:${activity.endTime.minute.toString().padLeft(2, '0')}',
                     style: TextStyle(fontSize: minTextSize, fontWeight: FontWeight.bold),
                   ),
-                  //SizedBox(height: minTextSize * 0.5), // Spacing between time and registration info
-                  //if (activity.count < activity.capacity) // Check if count is less than capacity
-                    //Text(
-                      //'Registrations: ${activity.count} / ${activity.capacity}',
-                      //style: TextStyle(fontSize: minTextSize * 0.9, color: Colors.grey[700]),
-                    //)
-                  //else
-                    //Text(
-                      //'No seats left', // Display when count exceeds capacity
-                      //style: TextStyle(fontSize: minTextSize * 0.9, color: Colors.red), // Optional styling for "No seats left"
-                    //),
                 ],
               ),
             ),
@@ -270,7 +253,6 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
       ),
     );
   }
-
 
   void _showActivityDetail(Activity activity, double minTextSize) {
     if (_isDialogOpen) return; // Prevent multiple dialogs from opening

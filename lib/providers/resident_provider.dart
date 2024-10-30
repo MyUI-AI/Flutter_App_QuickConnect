@@ -51,6 +51,12 @@ class ResidentProvider extends ChangeNotifier {
     notifyListeners(); // Notify listeners about changes
   }
 
+  void clearResident() {
+    _resident = null;  // Clear the resident data
+    _textSize = 16.0; // Reset text size to default or handle accordingly
+    notifyListeners(); // Notify listeners about changes
+  }
+
   // Additional method to update text size
   void updateTextSize(double newSize) {
     if (_textSize != newSize) { // Only update if the new size is different
@@ -58,4 +64,5 @@ class ResidentProvider extends ChangeNotifier {
       notifyListeners(); // Notify listeners about the change
     }
   }
+
 }

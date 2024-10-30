@@ -24,7 +24,8 @@ class _NameSelectionPageState extends State<NameSelectionPage> {
   }
 
   Future<void> _fetchResidents() async {
-    final residentProvider = Provider.of<ResidentProvider>(context, listen: false);
+    final residentProvider = Provider.of<ResidentProvider>(
+        context, listen: false);
     await residentProvider.fetchResidentsByApartment(widget.apartmentNumber);
   }
 
@@ -57,7 +58,7 @@ class _NameSelectionPageState extends State<NameSelectionPage> {
           if (residentProvider.residentList.isEmpty) {
             return _buildEmptyState();
           } else {
-            return _buildResidentList(residentProvider);
+            return _buildResidentGrid(residentProvider);
           }
         },
       ),
@@ -72,40 +73,130 @@ class _NameSelectionPageState extends State<NameSelectionPage> {
       ),
     );
   }
+  Widget _buildResidentGrid(ResidentProvider residentProvider) {
+    final residentCount = residentProvider.residentList.length;
 
-  Widget _buildResidentList(ResidentProvider residentProvider) {
-    return ListView.builder(
-      itemCount: residentProvider.residentList.length, // List of residents
-      itemBuilder: (context, index) {
-        final ResidentModel resident = residentProvider.residentList[index];
-        return _buildResidentCard(resident, residentProvider);
-      },
-    );
+    if (residentCount <= 4) {
+      // Divide the screen equally for up to 4 residents.
+      return Column(
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildResidentCard(
+                    residentProvider.residentList[0],
+                    residentProvider,
+                  ),
+                ),
+                if (residentCount > 1)
+                  Expanded(
+                    child: _buildResidentCard(
+                      residentProvider.residentList[1],
+                      residentProvider,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (residentCount > 2)
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildResidentCard(
+                      residentProvider.residentList[2],
+                      residentProvider,
+                    ),
+                  ),
+                  if (residentCount > 3)
+                    Expanded(
+                      child: _buildResidentCard(
+                        residentProvider.residentList[3],
+                        residentProvider,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+        ],
+      );
+    } else {
+      // Use a scrollable GridView when there are more than 4 residents.
+      return Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 0.8,
+          ),
+          itemCount: residentCount,
+          itemBuilder: (context, index) {
+            final ResidentModel resident = residentProvider.residentList[index];
+            return _buildResidentCard(resident, residentProvider);
+          },
+        ),
+      );
+    }
   }
 
-  Widget _buildResidentCard(ResidentModel resident, ResidentProvider residentProvider) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0), // Space between cards
-      elevation: 4, // Shadow effect
-      child: ListTile(
-        title: Text(
-          resident.name,
-          style: const TextStyle(fontWeight: FontWeight.bold), // Bold text
-        ),
-        subtitle: Text('Apartment: ${resident.apartmentNumber}'), // Additional info
-        trailing: const Icon(Icons.arrow_forward, color: Color(0xFFff6357)), // Arrow icon
-        onTap: () {
-          // Set the selected resident in the provider
-          residentProvider.setResident(resident);
 
-          // Navigate to the dashboard page
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DashboardPage(resident: resident),
-            ),
-          );
-        },
+
+
+  Widget _buildResidentCard(ResidentModel resident,
+      ResidentProvider residentProvider) {
+    return GestureDetector(
+      onTap: () {
+        // Set the selected resident in the provider
+        residentProvider.setResident(resident);
+
+        // Navigate to the dashboard page
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DashboardPage(resident: resident),
+          ),
+        );
+      },
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Center( // Center the content inside the tile
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CircleAvatar(
+                  radius: 40,
+                  backgroundImage: resident.profilePic?.isNotEmpty == true
+                      ? NetworkImage(
+                      resident.profilePic!) // Load profile picture if available
+                      : const AssetImage(
+                      'assets/default_profile.png') as ImageProvider, // Default image if not
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                resident.name,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Apartment: ${resident.apartmentNumber}',
+                style: const TextStyle(fontSize: 14, color: Colors.black54),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

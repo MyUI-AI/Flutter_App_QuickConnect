@@ -9,7 +9,7 @@ class Activity {
   final String location;
   final int capacity;
   int count; // Track the current number of registrations
-  bool signedUp; // Add this property to track sign-up status
+  bool signedUp; // Track sign-up status
 
   Activity({
     required this.name,
@@ -32,21 +32,23 @@ class Activity {
     return false; // Capacity full
   }
 
+  // Factory constructor to create an Activity from Firestore document
   factory Activity.fromFirestore(DocumentSnapshot doc) {
-    Map data = doc.data() as Map<String, dynamic>;
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return Activity(
-      name: data['name'] ?? '',
-      description: data['description'],
-      activityImage: data['activityImage'],
+      name: data['name'] ?? 'Unnamed Activity', // Provide a default name if null
+      description: data['description'], // Nullable field
+      activityImage: data['activityImage'] ?? 'default_image_url.png', // Fallback for null image URL
       startTime: (data['startTime'] as Timestamp).toDate(),
       endTime: (data['endTime'] as Timestamp).toDate(),
-      location: data['location'] ?? '',
-      capacity: data['capacity'] ?? 0,
-      count: data['count'] ?? 0,
-      signedUp: data['signedUp'] ?? false, // Initialize signedUp from Firestore
+      location: data['location'] ?? 'Unknown location', // Fallback for null location
+      capacity: data['capacity'] ?? 0, // Default to 0 if null
+      count: data['count'] ?? 0, // Default to 0 if null
+      signedUp: data['signedUp'] ?? false, // Default to false if null
     );
   }
 
+  // Convert Activity instance to Firestore representation
   Map<String, dynamic> toFirestore() {
     return {
       'name': name,
